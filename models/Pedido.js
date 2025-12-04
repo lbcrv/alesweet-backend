@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const pedidoSchema = new mongoose.Schema(
   {
-    id: { type: String }, // 👈 ID generado en Flutter
+    id: { type: String }, //ID generado en Flutter
 
     tipoCliente: { type: String, required: true },
 
