@@ -14,6 +14,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/uploads', express.static('uploads'));
+
 // CONECTAR A MONGODB ANTES DE INICIAR SERVIDOR
 connectDB().then(() => {
   // Rutas
