@@ -1,11 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Producto = require("../models/Producto");
-const multer = require("multer"); // 
-const path = require("path"); // 
-const fs = require("fs"); // 
+const multer = require("multer"); 
 
-// Middleware de autenticacion
 function verificarToken(req, res, next) {
   const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) {
@@ -14,51 +11,46 @@ function verificarToken(req, res, next) {
   next();
 }
 
-const uploadDir = "uploads/productos";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, "producto-" + uniqueSuffix + path.extname(file.originalname));
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'alesweet/productos',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 1024, height: 1024, crop: 'limit' }]
+  }
 });
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
-  fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png|gif|webp/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb(new Error("Solo se permiten imágenes (jpeg, jpg, png, gif, webp)"));
-  },
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-//Endpoint para subir imagen
 router.post(
   "/upload-imagen",
   verificarToken,
   upload.single("imagen"),
   (req, res) => {
     try {
+      console.log("Subiendo imagen a Cloudinary...");
+      
       if (!req.file) {
+        console.log("No se recibió archivo");
         return res.status(400).json({ error: "No se recibió ninguna imagen" });
       }
 
-      // URL de la imagen
-      const imageUrl = `${req.protocol}://${req.get("host")}/uploads/productos/${req.file.filename}`;
+      // Cloudinary devuelve la URL en req.file.path
+      const imageUrl = req.file.path;
+
+      console.log("Imagen subida exitosamente:", imageUrl);
 
       res.json({
         success: true,
