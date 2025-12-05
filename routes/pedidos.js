@@ -60,6 +60,18 @@ router.post("/", verificarToken, async (req, res) => {
       });
     }
 
+    // Generar numero de pedido único (6 digitos)
+    const ultimoPedido = await Pedido.findOne().sort({ createdAt: -1 });
+    let numeroPedido;
+    
+    if (ultimoPedido && ultimoPedido.numeroPedido) {
+      numeroPedido = (parseInt(ultimoPedido.numeroPedido) + 1).toString().padStart(6, '0');
+    } else {
+      numeroPedido = "000001";
+    }
+
+    console.log(`Generando pedido número: ${numeroPedido}`);
+
     // Calcular total
     let total = 0;
     for (const item of items) {
@@ -69,6 +81,7 @@ router.post("/", verificarToken, async (req, res) => {
     }
 
     const nuevoPedido = await Pedido.create({
+      numeroPedido,
       ...req.body,
       total,
       estado: req.body.estado || "pendiente",
@@ -84,7 +97,6 @@ router.post("/", verificarToken, async (req, res) => {
   }
 });
 
-// PUT actualizar estado del pedido
 router.put("/:id/estado", verificarToken, async (req, res) => {
   try {
     const { estado } = req.body;
@@ -116,7 +128,6 @@ router.put("/:id/estado", verificarToken, async (req, res) => {
   }
 });
 
-// PUT actualizar pedido completo
 router.put("/:id", verificarToken, async (req, res) => {
   try {
     const pedidoActualizado = await Pedido.findByIdAndUpdate(
@@ -139,7 +150,6 @@ router.put("/:id", verificarToken, async (req, res) => {
   }
 });
 
-// DELETE eliminar pedido
 router.delete("/:id", verificarToken, async (req, res) => {
   try {
     const pedidoEliminado = await Pedido.findByIdAndDelete(req.params.id);

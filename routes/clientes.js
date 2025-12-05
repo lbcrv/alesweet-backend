@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Cliente = require("../models/Cliente");
 
-// Middleware de autenticación
 function verificarToken(req, res, next) {
   const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) {
@@ -11,7 +10,6 @@ function verificarToken(req, res, next) {
   next();
 }
 
-// GET todos
 router.get("/", verificarToken, async (req, res) => {
   try {
     const clientes = await Cliente.find().sort({ createdAt: -1 });
@@ -22,7 +20,6 @@ router.get("/", verificarToken, async (req, res) => {
   }
 });
 
-// GET uno
 router.get("/:id", verificarToken, async (req, res) => {
   try {
     const cliente = await Cliente.findById(req.params.id);
@@ -36,7 +33,6 @@ router.get("/:id", verificarToken, async (req, res) => {
   }
 });
 
-// POST crear
 router.post("/", verificarToken, async (req, res) => {
   try {
     const cliente = await Cliente.create(req.body);
@@ -50,7 +46,6 @@ router.post("/", verificarToken, async (req, res) => {
   }
 });
 
-// PUT actualizar
 router.put("/:id", verificarToken, async (req, res) => {
   try {
     const clienteActualizado = await Cliente.findByIdAndUpdate(
@@ -73,7 +68,6 @@ router.put("/:id", verificarToken, async (req, res) => {
   }
 });
 
-// DELETE eliminar
 router.delete("/:id", verificarToken, async (req, res) => {
   try {
     const clienteEliminado = await Cliente.findByIdAndDelete(req.params.id);
