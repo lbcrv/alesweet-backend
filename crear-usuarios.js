@@ -16,6 +16,12 @@ const usuarios = [
     password: 'ventas12345', 
     rol: 'ventas'
   },
+    {
+    nombre: 'Yoel Lopez',
+    username: 'yoel',
+    password: '12345678',
+    rol: 'ventas'
+  },
   {
     nombre: 'Usuario Produccion',
     username: 'produccion',
